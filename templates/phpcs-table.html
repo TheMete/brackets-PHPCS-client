@@ -1,0 +1,18 @@
+<table class="zebra-striped" style="table-layout:fixed">
+    <tr class="phpcs-header">
+        <td width="5">Line</td>
+        <td width="5">Severity</td>
+        <td width="10">Type</td>
+        <td width="50">Message</td>
+        <td width="50">Source</td>
+    </tr>
+    {{#reportList}}
+    <tr>
+        <td class="line" data-col="{{column}}">{{line}}</td>
+        <td style='word-wrap: break-word'>{{severity}}</td>
+        <td style='word-wrap: break-word'>{{type}}</td>
+        <td style='word-wrap: break-word'>{{message}}</td>
+        <td style='word-wrap: break-word'>{{source}}</td>
+    </tr>
+    {{/reportList}}
+</table>

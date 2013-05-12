@@ -13,7 +13,7 @@ define(function (require, exports, module) {
         ExtensionUtils          = brackets.getModule("utils/ExtensionUtils");
     
     var panelHtml               = require("text!templates/bottom-panel.html"),
-        tableHtml               = require("text!templates/csslint-table.html"),
+        tableHtml               = require("text!templates/phpcs-table.html"),
         HEADER_HEIGHT           = 27;
     
     var lintUrl                 = "http://slofish.net/PHPCS/PHPCS.php";
@@ -32,10 +32,43 @@ define(function (require, exports, module) {
         var filename = currentDoc.file.fullPath.replace(/^.*[\\\/]/, '');
         
         $.post(lintUrl, {filename: filename, data: text}, function (messages) {
-            messages = messages.replace(/\n/g, "<br/>\n");
-            $("#phpcs .resizable-content")
-                .empty()
-                .append(messages);
+            
+            var jsonStartNdx = messages.indexOf("{");
+            
+            messages = messages.substr(jsonStartNdx);
+            messages = $.parseJSON(messages);
+            messages = messages.reportList;
+            if (messages.length) {
+                var $selectedRow;
+    
+                var html = Mustache.render(tableHtml, {reportList: messages});
+    
+                $("#phpcs .resizable-content")
+                    .empty()
+                    .append(html);
+                
+                $("#phpcs .resizable-content").find("tr").on("click", function (e) {
+                    if ($selectedRow) {
+                        $selectedRow.removeClass("selected");
+                    }
+    
+                    $(this).addClass("selected");
+                    $selectedRow = $(this);
+                    var lineTd = $(this).find("td.line");
+                    var line = lineTd.text();
+                    var col = lineTd.data("col");
+    
+                    var editor = EditorManager.getCurrentFullEditor();
+                    editor.setCursorPos(line - 1, col - 1);
+                    EditorManager.focusEditor();
+    
+                });
+    
+            } else {
+                $("#phpcs .resizable-content")
+                    .empty()
+                    .append("<p>No issues.</p>");
+            }
         }, "text");
     }
 
